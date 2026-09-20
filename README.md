@@ -83,9 +83,52 @@ Chạy benchmark so sánh định lượng cả 3 bộ tìm kiếm (Dense, BM25,
 python scripts/evaluate_retrieval.py
 ```
 
-### 4.5. Chạy kiểm thử toàn bộ (Pytest)
+### 4.5. Sinh câu trả lời pháp lý với Local Qwen (RAG Generation)
+Pipeline RAG grounded hoàn chỉnh tích hợp phân tích câu hỏi, làm rõ thông tin thiếu, truy xuất tài liệu và sinh câu trả lời với model Qwen chạy hoàn toàn local qua Ollama:
+
+```text
+User Query
+    ↓
+Query Understanding (QueryAnalyzer)
+    ↓
+Ambiguity / Missing Information Detection
+    ↓
+Nếu thiếu thông tin (loại xe, hành vi):
+    Clarification Question (CLARIFY)
+    ↓
+User trả lời làm rõ
+    ↓
+Contextual Query Reconstruction
+    ↓
+Retrieval (Dense / BM25 / Hybrid)
+    ↓
+Grounded Context + Prompt Injection Defense
+    ↓
+Local Qwen (qwen3:8b via Ollama)
+    ↓
+Grounded Legal Answer + Citation Consistency Validation
+```
+
+- **Yêu cầu môi trường Local Qwen:**
+  - Cài đặt và khởi chạy Ollama: `http://localhost:11434`
+  - Model mặc định: `qwen3:8b` (tùy chỉnh qua biến môi trường `QWEN_MODEL` hoặc `OLLAMA_BASE_URL`)
+  - Nhiệt độ mặc định: `0.1` (deterministic cho suy luận pháp lý)
+
+- **Các trạng thái phản hồi (Response Statuses):**
+  1. `ANSWER`: Đầy đủ căn cứ, sinh câu trả lời kèm trích dẫn văn bản pháp lý chính xác.
+  2. `CLARIFY`: Thiếu slot thông tin trọng yếu (ví dụ loại xe cho khung phạt nồng độ cồn), yêu cầu làm rõ ngắn gọn.
+  3. `INSUFFICIENT_CONTEXT`: Không tìm thấy đoạn luật phù hợp hoặc dữ liệu không đủ cơ sở để khẳng định.
+  4. `OUT_OF_SCOPE`: Câu hỏi ngoài phạm vi pháp luật giao thông đường bộ (thuế, ly hôn, đất đai...).
+
+- **Chạy Smoke Test kiểm thử thực tế với Ollama:**
+  ```bash
+  python scripts/smoke_test_rag.py
+  ```
+
+### 4.6. Chạy kiểm thử toàn bộ (Pytest)
 ```bash
 pytest -v
 ```
+
 
 
