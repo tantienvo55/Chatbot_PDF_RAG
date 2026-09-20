@@ -1,0 +1,31 @@
+{
+  "benchmark_query": "Đèn đỏ có được đi không?",
+  "cold_request": {
+    "total_ms": 82881.83,
+    "generation_ms": 82665.96,
+    "load_duration_ms": 13338.64
+  },
+  "warm_runs": [
+    {
+      "run": 1,
+      "total_ms": 52662.54,
+      "generation_ms": 52639.92,
+      "load_duration_ms": 16.34
+    },
+    {
+      "run": 2,
+      "total_ms": 53571.99,
+      "generation_ms": 53549.84,
+      "load_duration_ms": 8.94
+    },
+    {
+      "run": 3,
+      "total_ms": 53248.05,
+      "generation_ms": 53222.72,
+      "load_duration_ms": 17.53
+    }
+  ],
+  "warm_avg_total_ms": 53160.86,
+  "warm_avg_gen_ms": 53137.49,
+  "cold_to_warm_total_ratio": 1.56
+}

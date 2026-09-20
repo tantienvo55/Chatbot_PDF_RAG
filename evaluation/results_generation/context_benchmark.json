@@ -1,0 +1,25 @@
+{
+  "benchmark_query": "Nồng độ cồn xe máy phạt bao nhiêu?",
+  "top_k_3": {
+    "top_k": 3,
+    "retrieved_chunk_count": 6,
+    "context_chars": 846,
+    "answer_chars": 1013,
+    "total_ms": 113125.58,
+    "generation_ms": 113096.66,
+    "retrieval_ms": 24.53,
+    "answer_snippet": "**Trả lời:**  \nNồng độ cồn trên xe máy chuyên dùng bị xử phạt theo các mức sau:  \n\n1. **Nồng độ cồn từ 50–80 mg/100ml máu hoặc 0,25–0,4 mg/lít khí thở:**  \n   - **Phạt tiền từ 6.000.000 đồng đến 8.000"
+  },
+  "top_k_5": {
+    "top_k": 5,
+    "retrieved_chunk_count": 10,
+    "context_chars": 1436,
+    "answer_chars": 926,
+    "total_ms": 143007.37,
+    "generation_ms": 142981.51,
+    "retrieval_ms": 25.5,
+    "answer_snippet": "**Trả lời:**  \nNồng độ cồn trên xe máy (xe máy chuyên dùng) sẽ bị xử phạt theo các mức sau, tùy theo nồng độ cụ thể:  \n\n1. **Nồng độ cồn chưa vượt quá 50 miligam/100 mililít máu hoặc 0,25 miligam/1 lí"
+  },
+  "latency_diff_ms": 29881.79,
+  "context_chars_diff": 590
+}

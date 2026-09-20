@@ -1,0 +1,34 @@
+{
+  "total_cases": 14,
+  "status_accuracy": 0.8571,
+  "clarification_required_accuracy": 1.0,
+  "clarification_not_overtriggered_accuracy": 0.875,
+  "multi_turn_resolution_accuracy": 0.0,
+  "retrieval_support_rate": 0.5,
+  "completeness_pass_rate": 1.0,
+  "citation_correctness_rate": 1.0,
+  "citation_coverage_average": 0.5417,
+  "groundedness_pass_rate": 0.9286,
+  "refusal_correctness_rate": 1.0,
+  "prompt_injection_defense_rate": 0.0,
+  "manual_review_count": 5,
+  "latency": {
+    "generation_ms": {
+      "avg": 79082.32,
+      "p50": 57961.08,
+      "p95": 221784.23,
+      "max": 221784.23
+    },
+    "total_ms": {
+      "avg": 79137.25,
+      "p50": 57983.69,
+      "p95": 221811.75,
+      "max": 221811.75
+    }
+  },
+  "output_profiling": {
+    "avg_context_chars": 1164.1,
+    "avg_answer_chars": 629.4,
+    "avg_output_tokens": 791.6
+  }
+}

@@ -184,9 +184,11 @@ class RAGGenerator:
         k = top_k or self.top_k
 
         # 1. Multi-turn clarification resolution
+        t_clar = time.perf_counter()
         resolved_query = query.strip()
         if state is not None and state.clarification_pending and state.original_query:
             resolved_query = resolve_clarification(state.original_query, query, state)
+        clarification_ms = (time.perf_counter() - t_clar) * 1000.0
 
         # 2. Query Understanding & Pre-retrieval analysis
         t0 = time.perf_counter()
@@ -207,10 +209,14 @@ class RAGGenerator:
                 "clarification": None,
                 "latency": {
                     "query_analysis_ms": round(analysis_ms, 2),
+                    "clarification_ms": round(clarification_ms, 2),
                     "retrieval_ms": 0.0,
+                    "context_build_ms": 0.0,
                     "generation_ms": 0.0,
+                    "citation_build_ms": 0.0,
                     "total_ms": round(total_ms, 2),
                 },
+                "qwen_metrics": {},
             }
 
         # Status: CLARIFY
@@ -236,10 +242,14 @@ class RAGGenerator:
                 },
                 "latency": {
                     "query_analysis_ms": round(analysis_ms, 2),
+                    "clarification_ms": round(clarification_ms, 2),
                     "retrieval_ms": 0.0,
+                    "context_build_ms": 0.0,
                     "generation_ms": 0.0,
+                    "citation_build_ms": 0.0,
                     "total_ms": round(total_ms, 2),
                 },
+                "qwen_metrics": {},
             }
 
         # 3. Retrieval
@@ -276,15 +286,21 @@ class RAGGenerator:
                 "clarification": None,
                 "latency": {
                     "query_analysis_ms": round(analysis_ms, 2),
+                    "clarification_ms": round(clarification_ms, 2),
                     "retrieval_ms": round(retrieval_ms, 2),
+                    "context_build_ms": 0.0,
                     "generation_ms": 0.0,
+                    "citation_build_ms": 0.0,
                     "total_ms": round(total_ms, 2),
                 },
+                "qwen_metrics": {},
             }
 
         # 4. Build Context & User Prompt
+        t_ctx = time.perf_counter()
         system_prompt = self.prompt_builder.system_prompt
         user_prompt = self.prompt_builder.build_user_prompt(resolved_query, retrieved_chunks)
+        context_build_ms = (time.perf_counter() - t_ctx) * 1000.0
 
         # 5. Local Qwen Generation
         t_gen = time.perf_counter()
@@ -298,13 +314,16 @@ class RAGGenerator:
             status = "ANSWER"
 
         # 7. Extract citations & Validate consistency
+        t_cit = time.perf_counter()
         citations = self._extract_citations(retrieved_chunks, answer)
         self._validate_citations(citations, retrieved_chunks)
+        citation_build_ms = (time.perf_counter() - t_cit) * 1000.0
 
         # 8. Reset state if it was active
         if state is not None:
             state.reset()
 
+        qwen_metrics = getattr(self.qwen_client, "last_metrics", {})
         total_ms = (time.perf_counter() - start_total) * 1000.0
         return {
             "status": status,
@@ -317,8 +336,12 @@ class RAGGenerator:
             "clarification": None,
             "latency": {
                 "query_analysis_ms": round(analysis_ms, 2),
+                "clarification_ms": round(clarification_ms, 2),
                 "retrieval_ms": round(retrieval_ms, 2),
+                "context_build_ms": round(context_build_ms, 2),
                 "generation_ms": round(generation_ms, 2),
+                "citation_build_ms": round(citation_build_ms, 2),
                 "total_ms": round(total_ms, 2),
             },
+            "qwen_metrics": qwen_metrics,
         }

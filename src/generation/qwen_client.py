@@ -11,7 +11,7 @@ import httpx
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 DEFAULT_QWEN_MODEL = "qwen3:8b"
 DEFAULT_TEMPERATURE = 0.1
-DEFAULT_TIMEOUT_SECONDS = 180.0
+DEFAULT_TIMEOUT_SECONDS = 300.0
 
 
 class QwenError(Exception):
@@ -62,6 +62,7 @@ class QwenClient:
         self.temperature = float(temperature)
         self.timeout = float(timeout)
         self._custom_client = client
+        self.last_metrics: dict[str, Any] = {}
 
     def _get_client(self) -> httpx.Client:
         if self._custom_client is not None:
@@ -110,6 +111,15 @@ class QwenClient:
             res = client.post(url, json=payload)
             res.raise_for_status()
             data = res.json()
+            metric_keys = [
+                "total_duration",
+                "load_duration",
+                "prompt_eval_count",
+                "prompt_eval_duration",
+                "eval_count",
+                "eval_duration",
+            ]
+            self.last_metrics = {k: data[k] for k in metric_keys if k in data}
         except httpx.ConnectError as e:
             raise QwenConnectionError(
                 f"Cannot connect to Ollama at {self.base_url}. Please ensure Ollama is running."
