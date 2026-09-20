@@ -30,6 +30,14 @@ Tổng số chunk pháp lý: **2,305 chunks** (được phân đoạn chuẩn h�
   - Hoạt động hoàn toàn deterministic, không phụ thuộc mô hình NLP/LLM nặng.
 - **Tính nhất quán:** 2,305 documents mapping 1:1 đồng nhất với chỉ mục FAISS.
 
+### 2.3. Hybrid Retrieval (Reciprocal Rank Fusion - RRF)
+- **Fusion:** **Reciprocal Rank Fusion (RRF)** thuần rank:
+  $$RRF(d) = \sum_{r \in \{\text{dense}, \text{bm25}\}} \frac{1}{k + \text{rank}_r(d)} \quad (k = 60, \text{rank bắt đầu từ 1})$$
+- **Candidate Pool:** `dense_top_k = 20`, `bm25_top_k = 20`, kết quả cuối `top_k = 5`.
+- **Deduplication:** Khớp nối và loại bỏ trùng lặp dựa trên `chunk_id` chuẩn hóa.
+- **Tie-Breaking:** 100% deterministic dựa trên ưu tiên overlap và phạt thứ hạng thiếu (`dense_top_k + 1`, `bm25_top_k + 1`).
+- **Provenance:** Lưu vết đầy đủ thứ hạng và điểm số thành phần (`dense_rank`, `dense_score`, `bm25_rank`, `bm25_score`, `rrf_score`).
+
 ## 3. Cấu trúc lưu trữ
 ```
 data/
@@ -62,6 +70,10 @@ python -m src.retrieval.faiss_store
 - **Lexical Search (BM25Okapi):**
   ```bash
   python scripts/smoke_test_bm25.py
+  ```
+- **Hybrid Search (RRF):**
+  ```bash
+  python scripts/smoke_test_hybrid.py
   ```
 
 ### 4.4. Chạy kiểm thử toàn bộ (Pytest)
