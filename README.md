@@ -9,7 +9,9 @@ Hệ thống Retrieval-Augmented Generation (RAG) phục vụ tra cứu, hỏi �
 
 Tổng số chunk pháp lý: **2,305 chunks** (được phân đoạn chuẩn hóa cấp Điều / Khoản / Điểm kèm ngữ cảnh đầy đủ).
 
-## 2. Dense Retrieval & Vector Database
+## 2. Retrieval Engines Hiện có
+
+### 2.1. Dense Retrieval (Semantic Search)
 - **Embedding Model:** `BAAI/bge-m3` (đa ngôn ngữ, hỗ trợ tiếng Việt sâu).
   - Dense vector dimension: **1024**
   - Normalization: **L2 normalize** (norm ≈ 1.0)
@@ -19,12 +21,24 @@ Tổng số chunk pháp lý: **2,305 chunks** (được phân đoạn chuẩn h�
   - Ánh xạ trực tiếp chỉ mục FAISS position `0..N-1` sang danh sách metadata đầy đủ của từng chunk.
   - Xác thực tính toàn vẹn dữ liệu thông qua mã băm SHA-256 của corpus gốc.
 
-## 3. Cấu trúc lưu trữ Vector Store
+### 2.2. Lexical Retrieval (Keyword Search)
+- **Thuật toán:** **BM25Okapi** (`rank-bm25`).
+- **Vietnamese Lexical Tokenizer:**
+  - Chuẩn hóa Unicode NFC + lowercase.
+  - Nhận diện và bảo toàn định dạng số thập phân (`0,25`), số tiền (`100.000`), ngày tháng (`26/12/2024`), và mã số văn bản (`168/2024/NĐ-CP`, `36/2024/QH15`).
+  - Trích xuất unigram kết hợp consecutive word bigrams (ví dụ: `"mũ bảo hiểm"` → `["mũ", "bảo", "hiểm", "mũ_bảo", "bảo_hiểm"]`) phục vụ khớp cụm từ pháp lý.
+  - Hoạt động hoàn toàn deterministic, không phụ thuộc mô hình NLP/LLM nặng.
+- **Tính nhất quán:** 2,305 documents mapping 1:1 đồng nhất với chỉ mục FAISS.
+
+## 3. Cấu trúc lưu trữ
 ```
-data/vector_store/
-├── faiss.index           # Chỉ mục FAISS binary
-├── metadata.json         # Metadata pháp lý đầy đủ tương ứng từng vector
-└── index_manifest.json   # Thông số kỹ thuật của index và mã hash SHA-256
+data/
+├── chunks/
+│   └── legal_chunks.json     # 2,305 chunks pháp luật chuẩn hóa
+└── vector_store/
+    ├── faiss.index           # Chỉ mục FAISS binary
+    ├── metadata.json         # Metadata pháp lý đầy đủ tương ứng từng vector
+    └── index_manifest.json   # Thông số kỹ thuật của index và mã hash SHA-256
 ```
 
 ## 4. Hướng dẫn sử dụng
@@ -40,13 +54,18 @@ Tạo chỉ mục vector từ `data/chunks/legal_chunks.json`:
 python -m src.retrieval.faiss_store
 ```
 
-### 4.3. Chạy Smoke Test Dense Search
-Truy vấn thử nghiệm 5 câu hỏi pháp lý mẫu:
-```bash
-python scripts/smoke_test.py
-```
+### 4.3. Chạy Smoke Test
+- **Dense Search (BGE-M3 + FAISS):**
+  ```bash
+  python scripts/smoke_test.py
+  ```
+- **Lexical Search (BM25Okapi):**
+  ```bash
+  python scripts/smoke_test_bm25.py
+  ```
 
 ### 4.4. Chạy kiểm thử toàn bộ (Pytest)
 ```bash
 pytest -v
 ```
+
