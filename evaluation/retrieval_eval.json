@@ -1,0 +1,344 @@
+[
+  {
+    "id": "Q001",
+    "query": "Tín hiệu đèn màu đỏ có ý nghĩa gì khi tham gia giao thông?",
+    "relevant_chunk_ids": [
+      "L36_DIEU11_KHOAN4_DIEMC"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 11"
+      }
+    ]
+  },
+  {
+    "id": "Q002",
+    "query": "Ý nghĩa của tín hiệu đèn giao thông màu xanh và màu vàng là gì?",
+    "relevant_chunk_ids": [
+      "L36_DIEU11_KHOAN4_DIEMA",
+      "L36_DIEU11_KHOAN4_DIEMB"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 11"
+      }
+    ]
+  },
+  {
+    "id": "Q003",
+    "query": "Những trường hợp nào không được vượt xe theo Luật Giao thông?",
+    "relevant_chunk_ids": [
+      "L36_DIEU14_KHOAN6"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 14"
+      }
+    ]
+  },
+  {
+    "id": "Q004",
+    "query": "Khi vượt xe khác, người lái xe phải tuân thủ những quy tắc nào?",
+    "relevant_chunk_ids": [
+      "L36_DIEU14_KHOAN2",
+      "L36_DIEU14_KHOAN3"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 14"
+      }
+    ]
+  },
+  {
+    "id": "Q005",
+    "query": "Khái niệm dừng xe và đỗ xe được phân biệt như thế nào?",
+    "relevant_chunk_ids": [
+      "L36_DIEU18_KHOAN1",
+      "L36_DIEU18_KHOAN2"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 18"
+      }
+    ]
+  },
+  {
+    "id": "Q006",
+    "query": "Người điều khiển phương tiện không được dừng xe, đỗ xe tại các vị trí nào?",
+    "relevant_chunk_ids": [
+      "L36_DIEU18_KHOAN4"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 18"
+      }
+    ]
+  },
+  {
+    "id": "Q007",
+    "query": "Quy định về việc giữ khoảng cách an toàn giữa các xe cùng chiều?",
+    "relevant_chunk_ids": [
+      "L36_DIEU13_KHOAN2"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 13"
+      }
+    ]
+  },
+  {
+    "id": "Q008",
+    "query": "Người lái xe phải tuân thủ quy định về tốc độ và khoảng cách như thế nào?",
+    "relevant_chunk_ids": [
+      "L36_DIEU12_KHOAN1"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 12"
+      }
+    ]
+  },
+  {
+    "id": "Q009",
+    "query": "Quy tắc nhường đường và dừng xe khi qua đường ngang giao nhau với đường sắt?",
+    "relevant_chunk_ids": [
+      "L36_DIEU24_KHOAN1",
+      "L36_DIEU24_KHOAN2"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 24"
+      }
+    ]
+  },
+  {
+    "id": "Q010",
+    "query": "Người đi bộ phải tuân thủ quy tắc gì khi đi trên đường và qua đường?",
+    "relevant_chunk_ids": [
+      "L36_DIEU30_KHOAN1_DIEMA",
+      "L36_DIEU30_KHOAN1_DIEMB"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 30"
+      }
+    ]
+  },
+  {
+    "id": "Q011",
+    "query": "Người ngồi trên xe mô tô, xe gắn máy có bắt buộc phải đội mũ bảo hiểm không?",
+    "relevant_chunk_ids": [
+      "L36_DIEU33_KHOAN2"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 33"
+      }
+    ]
+  },
+  {
+    "id": "Q012",
+    "query": "Không đội mũ bảo hiểm hoặc chở người không đội mũ bảo hiểm khi đi xe máy bị phạt ra sao?",
+    "relevant_chunk_ids": [
+      "ND168_DIEU7_KHOAN2_DIEMH",
+      "ND168_DIEU7_KHOAN2_DIEMI"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "168/2024/NĐ-CP",
+        "article": "Điều 7"
+      }
+    ]
+  },
+  {
+    "id": "Q013",
+    "query": "Người điều khiển xe đạp máy không đội mũ bảo hiểm bị xử phạt như thế nào?",
+    "relevant_chunk_ids": [
+      "ND168_DIEU9_KHOAN4_DIEMD"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "168/2024/NĐ-CP",
+        "article": "Điều 9"
+      }
+    ]
+  },
+  {
+    "id": "Q014",
+    "query": "Các mức phạt nồng độ cồn đối với người điều khiển xe ô tô được quy định như thế nào?",
+    "relevant_chunk_ids": [
+      "ND168_DIEU6_KHOAN6_DIEMC",
+      "ND168_DIEU6_KHOAN9_DIEMA",
+      "ND168_DIEU6_KHOAN11_DIEMA"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "168/2024/NĐ-CP",
+        "article": "Điều 6"
+      }
+    ]
+  },
+  {
+    "id": "Q015",
+    "query": "Các mức phạt nồng độ cồn đối với người điều khiển xe mô tô, xe gắn máy?",
+    "relevant_chunk_ids": [
+      "ND168_DIEU7_KHOAN6_DIEMA",
+      "ND168_DIEU7_KHOAN8_DIEMB",
+      "ND168_DIEU7_KHOAN9_DIEMD"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "168/2024/NĐ-CP",
+        "article": "Điều 7"
+      }
+    ]
+  },
+  {
+    "id": "Q016",
+    "query": "Hành vi không chấp hành yêu cầu kiểm tra về nồng độ cồn bị xử phạt thế nào?",
+    "relevant_chunk_ids": [
+      "ND168_DIEU6_KHOAN11_DIEMB",
+      "ND168_DIEU7_KHOAN9_DIEMD_v2"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "168/2024/NĐ-CP",
+        "article": "Điều 6"
+      },
+      {
+        "doc_number": "168/2024/NĐ-CP",
+        "article": "Điều 7"
+      }
+    ]
+  },
+  {
+    "id": "Q017",
+    "query": "Giấy phép lái xe có bao nhiêu điểm và dùng để quản lý như thế nào?",
+    "relevant_chunk_ids": [
+      "L36_DIEU58_KHOAN1"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 58"
+      }
+    ]
+  },
+  {
+    "id": "Q018",
+    "query": "Điều kiện để giấy phép lái xe được phục hồi đủ 12 điểm là gì?",
+    "relevant_chunk_ids": [
+      "L36_DIEU58_KHOAN2"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 58"
+      }
+    ]
+  },
+  {
+    "id": "Q019",
+    "query": "Trình tự, thủ tục phục hồi điểm giấy phép lái xe chưa bị trừ hết điểm?",
+    "relevant_chunk_ids": [
+      "ND168_DIEU51_KHOAN2"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "168/2024/NĐ-CP",
+        "article": "Điều 51"
+      }
+    ]
+  },
+  {
+    "id": "Q020",
+    "query": "Người có giấy phép lái xe bị trừ hết điểm thì có được lái xe không?",
+    "relevant_chunk_ids": [
+      "L36_DIEU58_KHOAN3"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 58"
+      }
+    ]
+  },
+  {
+    "id": "Q021",
+    "query": "Sử dụng giấy phép lái xe đã bị trừ hết điểm bị xử phạt như thế nào?",
+    "relevant_chunk_ids": [
+      "ND168_DIEU18_KHOAN5_DIEMA",
+      "ND168_DIEU18_KHOAN7_DIEMB"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "168/2024/NĐ-CP",
+        "article": "Điều 18"
+      }
+    ]
+  },
+  {
+    "id": "Q022",
+    "query": "Người lái xe tham gia giao thông đường bộ phải mang theo những giấy tờ gì?",
+    "relevant_chunk_ids": [
+      "L36_DIEU56_KHOAN1_DIEMA",
+      "L36_DIEU56_KHOAN1_DIEMB"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 56"
+      }
+    ]
+  },
+  {
+    "id": "Q023",
+    "query": "Điều kiện đối với người lái xe gắn máy tham gia giao thông là gì?",
+    "relevant_chunk_ids": [
+      "L36_DIEU56_KHOAN4"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 56"
+      }
+    ]
+  },
+  {
+    "id": "Q024",
+    "query": "Quy định báo hiệu khi vận chuyển hàng hóa xếp vượt phía trước hoặc phía sau xe?",
+    "relevant_chunk_ids": [
+      "L36_DIEU47_KHOAN1_DIEME"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 47"
+      }
+    ]
+  },
+  {
+    "id": "Q025",
+    "query": "Giấy phép lái xe bị thu hồi trong những trường hợp nào?",
+    "relevant_chunk_ids": [
+      "L36_DIEU62_KHOAN5"
+    ],
+    "relevant_articles": [
+      {
+        "doc_number": "36/2024/QH15",
+        "article": "Điều 62"
+      }
+    ]
+  }
+]

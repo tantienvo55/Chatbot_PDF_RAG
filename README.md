@@ -76,8 +76,16 @@ python -m src.retrieval.faiss_store
   python scripts/smoke_test_hybrid.py
   ```
 
-### 4.4. Chạy kiểm thử toàn bộ (Pytest)
+### 4.4. Đánh giá chất lượng Retrieval (Benchmark Evaluation)
+Chạy benchmark so sánh định lượng cả 3 bộ tìm kiếm (Dense, BM25, Hybrid) trên tập dữ liệu chuẩn 25 câu hỏi:
+- **Metrics:** Hit@1, Hit@3, Hit@5, MRR@5, Recall@5, Article-Hit@5
+```bash
+python scripts/evaluate_retrieval.py
+```
+
+### 4.5. Chạy kiểm thử toàn bộ (Pytest)
 ```bash
 pytest -v
 ```
+
 
