@@ -125,10 +125,26 @@ Grounded Legal Answer + Citation Consistency Validation
   python scripts/smoke_test_rag.py
   ```
 
-### 4.6. Chạy kiểm thử toàn bộ (Pytest)
+### 4.7. Tinh chỉnh Production & Streaming (Prompt 8.6)
+Tối ưu hóa độ trễ, kiểm soát độ dài đầu ra và cải thiện trải nghiệm tương tác trực tiếp:
+- **Token Streaming (`generate_stream`):** Giao tiếp trực tiếp luồng token qua Ollama, hỗ trợ đo lường Time To First Token (TTFT).
+- **Bộ lọc suy nghĩ (`StreamThinkFilter`):** Loại bỏ hoàn toàn khối reasoning `<think>...</think>` trên toàn bộ ranh giới chunk, bảo đảm văn phong pháp lý chuyên nghiệp.
+- **Giới hạn sinh từ (`QWEN_NUM_PREDICT=384`):** Ngăn ngừa hiện tượng trả lời lan man hoặc tràn ngữ cảnh, giảm đáng kể thời gian sinh phản hồi.
+- **Giữ mô hình trong bộ nhớ (`OLLAMA_KEEP_ALIVE=10m`):** Giữ trọng số Qwen trên RAM/VRAM trong 10 phút, loại bỏ độ trễ cold reload 15–20s giữa các truy vấn.
+- **Hàm Warm-up an toàn (`warm_up_model`):** Khởi động tải trước mô hình lúc startup với timeout ngắn và cơ chế bắt lỗi an toàn (không bao giờ làm sập ứng dụng).
+- **Dynamic Top-K Retrieval (`select_retrieval_top_k`):** Tự động chọn `top_k = 3` cho câu hỏi quy định đơn giản/định nghĩa và `top_k = 5` cho khung phạt nhiều mức/trừ điểm GPLX, đồng thời tuân thủ tuyệt đối tham số `top_k` khi caller chỉ định rõ ràng.
+- **Khử trùng lặp ngữ cảnh & Giới hạn ký tự (`MAX_CONTEXT_CHARS=8000`):** Loại bỏ các chunk trùng lặp ID và cắt tỉa theo ranh giới chunk nguyên vẹn.
+
+Chạy Production Benchmark so sánh 3 cấu hình (Cold Baseline, Warm Baseline, Warm Production Candidate):
+```bash
+python scripts/benchmark_production.py
+```
+Kết quả báo cáo được lưu trữ tự động tại `evaluation/results_production/` bao gồm:
+- `production_benchmark.json`: Chi tiết đo đạc từng câu hỏi trên từng cấu hình.
+- `production_summary.json`: Tổng hợp so sánh chỉ số TTFT, Gen Latency, Total Latency, Eval Count và Quality Gate.
+- `production_summary.csv`: Bảng tổng hợp đối soát chi tiết.
+
+### 4.8. Chạy kiểm thử toàn bộ (Pytest)
 ```bash
 pytest -v
 ```
-
-
-

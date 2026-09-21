@@ -1,0 +1,69 @@
+{
+  "quality_gate_passed": true,
+  "quality_regressions": [],
+  "cold_baseline": {
+    "query": "Đèn đỏ có được đi không?",
+    "total_ms": 62171.84,
+    "generation_ms": 61312.65,
+    "load_duration_ms": 15838.56,
+    "eval_count": 384
+  },
+  "comparison": {
+    "status_accuracy": {
+      "baseline": 1.0,
+      "candidate": 1.0
+    },
+    "generation_ms": {
+      "baseline": {
+        "avg": 43701.5,
+        "p50": 46496.9,
+        "p95": 51068.0,
+        "max": 51068.0
+      },
+      "candidate": {
+        "avg": 19468.4,
+        "p50": 16798.4,
+        "p95": 42544.5,
+        "max": 42544.5
+      }
+    },
+    "total_ms": {
+      "baseline": {
+        "avg": 33108.7,
+        "p50": 45927.8,
+        "p95": 51476.6,
+        "max": 51476.6
+      },
+      "candidate": {
+        "avg": 14781.8,
+        "p50": 10627.2,
+        "p95": 42752.5,
+        "max": 42752.5
+      }
+    },
+    "ttft_ms": {
+      "candidate": {
+        "avg": 2789.5,
+        "p50": 2612.1,
+        "p95": 3755.4,
+        "max": 3755.4
+      }
+    },
+    "avg_eval_count": {
+      "baseline": 267.9,
+      "candidate": 126.1
+    },
+    "avg_output_tokens": {
+      "baseline": 267.9,
+      "candidate": 126.1
+    },
+    "avg_context_chars": {
+      "baseline": 1358.1,
+      "candidate": 1040.2
+    },
+    "avg_answer_chars": {
+      "baseline": 87.1,
+      "candidate": 374.9
+    }
+  }
+}

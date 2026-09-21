@@ -251,13 +251,10 @@ class QueryAnalyzer:
 
         # Case 2: Helmet penalty inquiry
         # E.g. "Không đội mũ bảo hiểm phạt bao nhiêu?"
-        # Penalty depends on whether it's driver or passenger, and vehicle class (motorcycle vs electric bike)
+        # Penalty depends on vehicle class (motorcycle vs electric bike / bicycle)
         if violation == "không đội mũ bảo hiểm" and is_penalty_inquiry:
             if not vehicle:
                 missing.append("vehicle_type")
-            if not actor:
-                missing.append("actor_role")
-            if missing:
                 return True, missing
 
         # Case 3: Vehicle-bracketed penalty inquiries (alcohol, red light, speeding, wrong-way)
@@ -341,3 +338,50 @@ class QueryAnalyzer:
         if violation:
             return f"inquiry_{violation.replace(' ', '_')}"
         return "general_traffic_law_inquiry"
+
+
+def select_retrieval_top_k(analysis: dict[str, Any]) -> int:
+    """
+    Deterministically select appropriate retrieval top-K based on query analysis.
+    Uses top_k=5 for complex multi-bracket/multi-condition inquiries,
+    and top_k=3 for simple definitions, signals, or single-action rules.
+
+    Args:
+        analysis: Analysis dictionary returned by QueryAnalyzer.analyze().
+
+    Returns:
+        Integer top_k value (3 or 5).
+    """
+    if not analysis or analysis.get("is_out_of_scope"):
+        return 3
+
+    slots = analysis.get("extracted_slots", {})
+    violation = slots.get("violation_type")
+    query_norm = analysis.get("normalized_query", "")
+
+    # 1. Any penalty inquiry or sanction inquiry requires top_k=5 to capture specific clause/point brackets
+    is_penalty = bool(re.search(
+        r"\b(phạt\s+bao\s+nhiêu|mức\s+phạt|bị\s+phạt|xử\s+phạt|tiền\s+phạt|trừ\s+điểm)\b",
+        query_norm
+    ))
+    if is_penalty:
+        return 5
+
+    # 2. Complex multi-bracket inquiries: alcohol violations, license points deduction
+    if violation in ("nồng độ cồn", "trừ điểm giấy phép lái xe"):
+        return 5
+
+    # 3. Queries with explicit multi-part or enumeration cues
+    multi_cues = [
+        r"\b(các\s+mức|mấy\s+mức|những\s+mức|bao\s+nhiêu\s+mức)\b",
+        r"\b(những\s+trường\s+hợp|các\s+trường\s+hợp|trường\s+hợp\s+nào)\b",
+        r"\b(quy\s+định\s+nào|những\s+quy\s+tắc|các\s+quy\s+tắc)\b",
+        r"\b(điều\s+kiện\s+gì|những\s+điều\s+kiện|các\s+điều\s+kiện)\b",
+        r"\b(liệt\s+kê|tổng\s+hợp|toàn\s+bộ)\b",
+    ]
+    for pat in multi_cues:
+        if re.search(pat, query_norm):
+            return 5
+
+    # 4. Simple rules, single actions, definitions, signal meanings -> top_k=3
+    return 3

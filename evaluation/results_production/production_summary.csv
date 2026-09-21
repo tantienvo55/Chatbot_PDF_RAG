@@ -1,0 +1,9 @@
+id,query,category,baseline_status,candidate_status,baseline_gen_ms,candidate_gen_ms,candidate_ttft_ms,baseline_total_ms,candidate_total_ms,baseline_context_chars,candidate_context_chars,baseline_eval_count,candidate_eval_count,baseline_support_complete,candidate_support_complete
+P01,Đèn đỏ có được đi không?,general_rule,ANSWER,ANSWER,36012.01,8725.15,2804.07,36711.42,9018.52,1653,920,303,65,True,True
+P02,Nồng độ cồn xe máy phạt bao nhiêu?,multi_bracket_penalty,ANSWER,ANSWER,49217.84,16798.39,2612.11,49512.38,17121.4,1436,1436,384,129,False,False
+P03,Không đội mũ bảo hiểm xe máy phạt bao nhiêu?,single_penalty,ANSWER,ANSWER,46496.92,10428.44,3755.43,46981.15,10627.2,1494,1494,384,70,True,True
+P04,Giấy phép lái xe bị trừ điểm trong trường hợp nào?,legal_conditions,ANSWER,ANSWER,51068.02,42544.47,2532.58,51476.63,42752.53,2281,2281,384,372,False,False
+P05,Thế nào là dừng xe và đỗ xe?,definition,ANSWER,ANSWER,45510.23,33353.88,2531.42,45927.77,33570.36,1923,1005,384,350,True,True
+P06,Nồng độ cồn phạt bao nhiêu?,clarification_required,CLARIFY,CLARIFY,0.0,0.0,0.0,0.17,0.07,0,0,0,0,True,True
+P07,Thuế thu nhập cá nhân tính thế nào?,out_of_scope,OUT_OF_SCOPE,OUT_OF_SCOPE,0.0,0.0,0.0,0.03,0.02,0,0,0,0,True,True
+P08,Thời gian bảo hành của thiết bị bay không người lái flycam theo quy định hàng không là bao lâu?,insufficient_context,INSUFFICIENT_CONTEXT,INSUFFICIENT_CONTEXT,33904.06,4959.82,2501.34,34259.89,5164.23,2078,1186,304,23,True,True

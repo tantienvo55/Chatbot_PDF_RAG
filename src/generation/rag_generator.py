@@ -1,14 +1,17 @@
 """
 RAG Generator orchestrator module for Vietnamese Traffic Law QA.
 Integrates QueryAnalyzer, ConversationState, Retrieval (dense/bm25/hybrid),
-PromptBuilder, Local Qwen, strict Citation Consistency Validation, and 4 response modes.
+PromptBuilder, Local Qwen, strict Citation Consistency Validation, 4 response modes,
+and Production-ready Streaming API with structured events and dynamic top-K.
 """
 
-import time
-from typing import Any, Optional, Union
-import re
+from __future__ import annotations
 
-from ..query.query_analyzer import QueryAnalyzer, OUT_OF_SCOPE_MESSAGE
+import re
+import time
+from typing import Any, Generator, Optional, Union
+
+from ..query.query_analyzer import QueryAnalyzer, OUT_OF_SCOPE_MESSAGE, select_retrieval_top_k
 from ..query.clarification import ConversationState, resolve_clarification
 from .qwen_client import QwenClient
 from .prompt_builder import PromptBuilder
@@ -43,7 +46,8 @@ INSUFFICIENT_RES = [re.compile(p, re.IGNORECASE) for p in INSUFFICIENT_PATTERNS]
 
 class RAGGenerator:
     """
-    Orchestrates end-to-end grounded RAG answer generation with local Qwen and clarification handling.
+    Orchestrates end-to-end grounded RAG answer generation with local Qwen,
+    clarification handling, dynamic top-K, and streaming support.
     """
 
     def __init__(
@@ -54,6 +58,7 @@ class RAGGenerator:
         prompt_builder: Optional[PromptBuilder] = None,
         default_retrieval_mode: str = "dense",
         top_k: int = 5,
+        enable_dynamic_top_k: bool = True,
     ) -> None:
         """
         Initialize RAGGenerator.
@@ -65,7 +70,8 @@ class RAGGenerator:
             query_analyzer: QueryAnalyzer instance (defaults to new QueryAnalyzer).
             prompt_builder: PromptBuilder instance (defaults to standard PromptBuilder).
             default_retrieval_mode: Mode to use ('dense', 'bm25', 'hybrid'). Default: 'dense'.
-            top_k: Top-K retrieved chunks to use in context (default: 5).
+            top_k: Default Top-K retrieved chunks (default: 5).
+            enable_dynamic_top_k: Whether to adaptively pick top_k (3 vs 5) when top_k is None.
         """
         self.retrievers: dict[str, Any]
         if isinstance(retriever, dict):
@@ -78,6 +84,7 @@ class RAGGenerator:
         self.query_analyzer = query_analyzer or QueryAnalyzer()
         self.prompt_builder = prompt_builder or PromptBuilder()
         self.top_k = top_k
+        self.enable_dynamic_top_k = enable_dynamic_top_k
 
         # Hierarchical parent clause lookup to supply penalty context for point-level chunks
         self._parent_clause_map: dict[tuple[Any, Any, str], dict[str, Any]] = {}
@@ -160,6 +167,17 @@ class RAGGenerator:
                 f"Citation validation failed: chunk_ids {diff} appear in citations but were not retrieved!"
             )
 
+    def _resolve_top_k(self, top_k: Optional[int], analysis: dict[str, Any]) -> int:
+        """
+        Determine effective top_k respecting explicit caller overrides first,
+        falling back to dynamic selection or default top_k.
+        """
+        if top_k is not None:
+            return int(top_k)
+        if self.enable_dynamic_top_k:
+            return select_retrieval_top_k(analysis)
+        return self.top_k
+
     def generate(
         self,
         query: str,
@@ -168,20 +186,19 @@ class RAGGenerator:
         top_k: Optional[int] = None,
     ) -> dict[str, Any]:
         """
-        Execute end-to-end RAG pipeline for a user query.
+        Execute synchronous end-to-end RAG pipeline for a user query.
 
         Args:
             query: User's query text or clarification answer.
             state: Optional ConversationState for multi-turn dialogue.
             retrieval_mode: Override for retrieval mode ('dense', 'bm25', 'hybrid').
-            top_k: Override for number of chunks to retrieve.
+            top_k: Explicit override for number of chunks to retrieve.
 
         Returns:
-            Structured dictionary matching Prompt 8 specifications with latency metrics.
+            Structured dictionary matching Prompt 8/8.5 specifications with latency metrics.
         """
         start_total = time.perf_counter()
         active_mode = retrieval_mode or self.default_retrieval_mode
-        k = top_k or self.top_k
 
         # 1. Multi-turn clarification resolution
         t_clar = time.perf_counter()
@@ -214,6 +231,7 @@ class RAGGenerator:
                     "context_build_ms": 0.0,
                     "generation_ms": 0.0,
                     "citation_build_ms": 0.0,
+                    "ttft_ms": None,
                     "total_ms": round(total_ms, 2),
                 },
                 "qwen_metrics": {},
@@ -247,12 +265,14 @@ class RAGGenerator:
                     "context_build_ms": 0.0,
                     "generation_ms": 0.0,
                     "citation_build_ms": 0.0,
+                    "ttft_ms": None,
                     "total_ms": round(total_ms, 2),
                 },
                 "qwen_metrics": {},
             }
 
-        # 3. Retrieval
+        # 3. Retrieval with dynamic top-K / explicit override
+        k = self._resolve_top_k(top_k, analysis)
         retriever = self._get_retriever(active_mode)
         t_ret = time.perf_counter()
         retrieved_chunks = retriever.search(resolved_query, top_k=k)
@@ -291,6 +311,7 @@ class RAGGenerator:
                     "context_build_ms": 0.0,
                     "generation_ms": 0.0,
                     "citation_build_ms": 0.0,
+                    "ttft_ms": None,
                     "total_ms": round(total_ms, 2),
                 },
                 "qwen_metrics": {},
@@ -341,7 +362,218 @@ class RAGGenerator:
                 "context_build_ms": round(context_build_ms, 2),
                 "generation_ms": round(generation_ms, 2),
                 "citation_build_ms": round(citation_build_ms, 2),
+                "ttft_ms": None,
                 "total_ms": round(total_ms, 2),
             },
             "qwen_metrics": qwen_metrics,
         }
+
+    def generate_stream(
+        self,
+        query: str,
+        state: Optional[ConversationState] = None,
+        retrieval_mode: Optional[str] = None,
+        top_k: Optional[int] = None,
+    ) -> Generator[dict[str, Any], None, None]:
+        """
+        Execute streaming end-to-end RAG pipeline yielding structured stream events.
+        Enables real-time token delivery to the UI, zero LLM calls for non-generative statuses,
+        and guarantees final_response["answer"] == "".join(streamed_tokens).
+
+        Yields:
+            - {"type": "status", "status": "analyzing" | "retrieving" | "generating" | ...}
+            - {"type": "token", "text": "..."}
+            - {"type": "final", "response": {...}}
+        """
+        start_total = time.perf_counter()
+        active_mode = retrieval_mode or self.default_retrieval_mode
+
+        yield {"type": "status", "status": "analyzing"}
+
+        # 1. Multi-turn clarification resolution
+        t_clar = time.perf_counter()
+        resolved_query = query.strip()
+        if state is not None and state.clarification_pending and state.original_query:
+            resolved_query = resolve_clarification(state.original_query, query, state)
+        clarification_ms = (time.perf_counter() - t_clar) * 1000.0
+
+        # 2. Query Understanding & Pre-retrieval analysis
+        t0 = time.perf_counter()
+        analysis = self.query_analyzer.analyze(resolved_query)
+        analysis_ms = (time.perf_counter() - t0) * 1000.0
+
+        # Status: OUT_OF_SCOPE (no LLM call)
+        if analysis["is_out_of_scope"]:
+            yield {"type": "status", "status": "out_of_scope"}
+            total_ms = (time.perf_counter() - start_total) * 1000.0
+            response = {
+                "status": "OUT_OF_SCOPE",
+                "query": query,
+                "resolved_query": resolved_query,
+                "answer": analysis.get("out_of_scope_message") or OUT_OF_SCOPE_MESSAGE,
+                "retrieval_mode": active_mode,
+                "citations": [],
+                "retrieved_chunks": [],
+                "clarification": None,
+                "latency": {
+                    "query_analysis_ms": round(analysis_ms, 2),
+                    "clarification_ms": round(clarification_ms, 2),
+                    "retrieval_ms": 0.0,
+                    "context_build_ms": 0.0,
+                    "generation_ms": 0.0,
+                    "citation_build_ms": 0.0,
+                    "ttft_ms": 0.0,
+                    "total_ms": round(total_ms, 2),
+                },
+                "qwen_metrics": {},
+            }
+            yield {"type": "final", "response": response}
+            return
+
+        # Status: CLARIFY (no LLM call)
+        if analysis["is_ambiguous"]:
+            yield {"type": "status", "status": "clarify"}
+            if state is not None:
+                state.original_query = resolved_query
+                state.missing_slots = analysis["missing_slots"]
+                state.clarification_pending = True
+                state.last_clarification_question = analysis["clarification_question"]
+
+            total_ms = (time.perf_counter() - start_total) * 1000.0
+            response = {
+                "status": "CLARIFY",
+                "query": query,
+                "resolved_query": resolved_query,
+                "answer": None,
+                "retrieval_mode": active_mode,
+                "citations": [],
+                "retrieved_chunks": [],
+                "clarification": {
+                    "question": analysis["clarification_question"],
+                    "missing_slots": analysis["missing_slots"],
+                },
+                "latency": {
+                    "query_analysis_ms": round(analysis_ms, 2),
+                    "clarification_ms": round(clarification_ms, 2),
+                    "retrieval_ms": 0.0,
+                    "context_build_ms": 0.0,
+                    "generation_ms": 0.0,
+                    "citation_build_ms": 0.0,
+                    "ttft_ms": 0.0,
+                    "total_ms": round(total_ms, 2),
+                },
+                "qwen_metrics": {},
+            }
+            yield {"type": "final", "response": response}
+            return
+
+        # 3. Retrieval with dynamic top-K / explicit override
+        yield {"type": "status", "status": "retrieving"}
+        k = self._resolve_top_k(top_k, analysis)
+        retriever = self._get_retriever(active_mode)
+        t_ret = time.perf_counter()
+        retrieved_chunks = retriever.search(resolved_query, top_k=k)
+        retrieval_ms = (time.perf_counter() - t_ret) * 1000.0
+
+        # Hierarchically enrich point-level chunks with parent clause chunks to provide complete penalty context
+        if self._parent_clause_map and retrieved_chunks:
+            enriched = list(retrieved_chunks)
+            seen_ids = {c["chunk_id"] for c in enriched}
+            for r in retrieved_chunks:
+                if r.get("point") and r.get("clause"):
+                    cl = str(r.get("clause")).strip().rstrip(".")
+                    key = (r.get("doc_number"), r.get("article"), cl)
+                    parent = self._parent_clause_map.get(key)
+                    if parent and parent.get("chunk_id") not in seen_ids:
+                        seen_ids.add(parent["chunk_id"])
+                        enriched.append(parent)
+            retrieved_chunks = enriched
+
+        # Status: INSUFFICIENT_CONTEXT (0 chunks returned, no LLM call)
+        if not retrieved_chunks:
+            yield {"type": "status", "status": "insufficient_context"}
+            total_ms = (time.perf_counter() - start_total) * 1000.0
+            response = {
+                "status": "INSUFFICIENT_CONTEXT",
+                "query": query,
+                "resolved_query": resolved_query,
+                "answer": INSUFFICIENT_CONTEXT_MESSAGE,
+                "retrieval_mode": active_mode,
+                "citations": [],
+                "retrieved_chunks": [],
+                "clarification": None,
+                "latency": {
+                    "query_analysis_ms": round(analysis_ms, 2),
+                    "clarification_ms": round(clarification_ms, 2),
+                    "retrieval_ms": round(retrieval_ms, 2),
+                    "context_build_ms": 0.0,
+                    "generation_ms": 0.0,
+                    "citation_build_ms": 0.0,
+                    "ttft_ms": 0.0,
+                    "total_ms": round(total_ms, 2),
+                },
+                "qwen_metrics": {},
+            }
+            yield {"type": "final", "response": response}
+            return
+
+        # 4. Build Context & User Prompt
+        t_ctx = time.perf_counter()
+        system_prompt = self.prompt_builder.system_prompt
+        user_prompt = self.prompt_builder.build_user_prompt(resolved_query, retrieved_chunks)
+        context_build_ms = (time.perf_counter() - t_ctx) * 1000.0
+
+        # 5. Stream Token Generation from Local Qwen
+        yield {"type": "status", "status": "generating"}
+        t_gen = time.perf_counter()
+        streamed_parts: list[str] = []
+
+        for token in self.qwen_client.generate_stream(system_prompt, user_prompt):
+            streamed_parts.append(token)
+            yield {"type": "token", "text": token}
+
+        generation_ms = (time.perf_counter() - t_gen) * 1000.0
+        full_answer = "".join(streamed_parts)
+
+        # 6. Check if model signaled insufficient context
+        if self._detect_model_insufficient(full_answer):
+            status = "INSUFFICIENT_CONTEXT"
+        else:
+            status = "ANSWER"
+
+        # 7. Extract citations & Validate consistency
+        t_cit = time.perf_counter()
+        citations = self._extract_citations(retrieved_chunks, full_answer)
+        self._validate_citations(citations, retrieved_chunks)
+        citation_build_ms = (time.perf_counter() - t_cit) * 1000.0
+
+        # 8. Reset state if it was active
+        if state is not None:
+            state.reset()
+
+        ttft_ms = getattr(self.qwen_client, "last_ttft_ms", None)
+        qwen_metrics = getattr(self.qwen_client, "last_metrics", {})
+        total_ms = (time.perf_counter() - start_total) * 1000.0
+
+        final_response = {
+            "status": status,
+            "query": query,
+            "resolved_query": resolved_query,
+            "answer": full_answer,
+            "retrieval_mode": active_mode,
+            "citations": citations,
+            "retrieved_chunks": retrieved_chunks,
+            "clarification": None,
+            "latency": {
+                "query_analysis_ms": round(analysis_ms, 2),
+                "clarification_ms": round(clarification_ms, 2),
+                "retrieval_ms": round(retrieval_ms, 2),
+                "context_build_ms": round(context_build_ms, 2),
+                "generation_ms": round(generation_ms, 2),
+                "citation_build_ms": round(citation_build_ms, 2),
+                "ttft_ms": ttft_ms,
+                "total_ms": round(total_ms, 2),
+            },
+            "qwen_metrics": qwen_metrics,
+        }
+        yield {"type": "final", "response": final_response}
